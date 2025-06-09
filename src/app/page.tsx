@@ -1,8 +1,9 @@
+import { InfoCard } from "@/components/InfoCard";
+
 export default function Home() {
   return (
-    <div>
-      <h1>Couchbase RAG with Mastra</h1>
-      <p>This is a demo of a RAG application using Couchbase and Mastra.</p>
+    <div className="mx-auto flex flex-col gap-4 container mt-10">
+      <InfoCard />
     </div>
   );
 }
