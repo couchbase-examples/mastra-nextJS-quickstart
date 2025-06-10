@@ -6,6 +6,7 @@ import { MDocument } from "@mastra/rag";
 import { writeFile } from "fs/promises";
 import path from "path";
 import { existsSync, mkdirSync } from "fs";
+import pdfParse from 'pdf-parse';
 
 
 // List of required environment variables
@@ -76,7 +77,6 @@ const COUCHBASE_CONFIG = {
 async function readDocument(fileBuffer: Buffer, fileName: string): Promise<string> {
     try {
         // Use pdf-parse for simple and reliable PDF text extraction
-        const pdfParse = (await import('pdf-parse')).default;
         const data = await pdfParse(fileBuffer);
         return data.text;
     } catch (error) {
@@ -155,7 +155,7 @@ async function createDocumentEmbeddings(documentText: string, fileName: string):
 
         // Step 5: Prepare metadata and IDs
         const metadatas = chunks.map((chunk, index) => ({
-            text: chunk,
+            text: chunk.text,
             chunkIndex: index,
             timestamp: new Date().toISOString(),
         }));
@@ -190,11 +190,11 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(bytes);
 
     // Create public/assets directory if it doesn't exist and write the file to it
-    if (!existsSync(path.join(process.cwd(), "public/assets"))) {
-      mkdirSync(path.join(process.cwd(), "public/assets"));
+    if (!existsSync(path.join(process.cwd(), "/src/public/assets"))) {
+      mkdirSync(path.join(process.cwd(), "/src/public/assets"));
     }
     await writeFile(
-      path.join(process.cwd(), "public/assets", file.name),
+      path.join(process.cwd(), "/src/public/assets", file.name),
       buffer
     );
     const documentText = await readDocument(buffer, file.name);
