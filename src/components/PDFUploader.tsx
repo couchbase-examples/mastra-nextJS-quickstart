@@ -22,8 +22,7 @@ const PDFUploader = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const onDrop = useCallback((acceptedFiles: File[]) => {
-        console.log(acceptedFiles[0]);
-        setSelectedFile(acceptedFiles[0]);
+        setSelectedFile(acceptedFiles[0] || null);
     }, []);
 
     const { getRootProps, getInputProps } = useDropzone({
@@ -85,8 +84,8 @@ const PDFUploader = () => {
             <button
                 type="button"
                 className={`font-semibold py-2 px-4 rounded mt-4 flex items-center justify-center h-12 ${isLoading
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-blue-500 hover:bg-blue-600 text-white"
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-500 hover:bg-blue-600 text-white"
                     }`}
                 onClick={uploadPdf}
                 disabled={isLoading}

@@ -138,16 +138,17 @@ async function createDocumentEmbeddings(documentText: string, fileName: string):
         console.info(`Chunking ${fileName} document...`);
         const doc = MDocument.fromText(documentText);
         const chunks = await doc.chunk({
-            strategy: "recursive",
-            size: 512,
+            size: 100,
             overlap: 50,
             separator: "\n",
+            stripHeaders: true,
+            addStartIndex: true,
         });
         console.info(`Created ${chunks.length} chunks`);
-
+        
         // Step 4: Generate embeddings
         console.info('Generating embeddings...');
-        const { embeddings } = await embedMany({
+        const { embeddings } = await embedMany({ 
             model: openai.embedding(EMBEDDING_CONFIG.model),
             values: chunks.map((chunk) => chunk.text),
         });
@@ -158,6 +159,8 @@ async function createDocumentEmbeddings(documentText: string, fileName: string):
             text: chunk.text,
             chunkIndex: index,
             timestamp: new Date().toISOString(),
+            start: chunk.metadata?.startIndex,
+            end: chunk.metadata?.startIndex !== undefined ? chunk.metadata.startIndex + chunk.text.length : undefined,
         }));
 
         const ids = chunks.map((_, index) => `${fileName}_chunk_${index}`);
@@ -182,31 +185,31 @@ async function createDocumentEmbeddings(documentText: string, fileName: string):
 
 
 export async function POST(request: Request) {
-  const data = await request.formData();
-  const file: File | null = data.get("file") as unknown as File;
-  
-  try {
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    const data = await request.formData();
+    const file: File | null = data.get("file") as unknown as File;
 
-    // Create public/assets directory if it doesn't exist and write the file to it
-    if (!existsSync(path.join(process.cwd(), "/src/public/assets"))) {
-      mkdirSync(path.join(process.cwd(), "/src/public/assets"));
+    try {
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+
+        // Create public/assets directory if it doesn't exist and write the file to it
+        if (!existsSync(path.join(process.cwd(), "public/assets"))) {
+            mkdirSync(path.join(process.cwd(), "public/assets"));
+        }
+        await writeFile(
+            path.join(process.cwd(), "public/assets", file.name),
+            buffer
+        );
+        const documentText = await readDocument(buffer, file.name);
+        await createDocumentEmbeddings(documentText, file.name);
+
+    } catch (error) {
+        console.log("error", error);
+        return NextResponse.json({ error: "Failed to ingest your data" });
     }
-    await writeFile(
-      path.join(process.cwd(), "/src/public/assets", file.name),
-      buffer
-    );
-    const documentText = await readDocument(buffer, file.name);
-    await createDocumentEmbeddings(documentText, file.name);
-  
-} catch (error) {
-    console.log("error", error);
-    return NextResponse.json({ error: "Failed to ingest your data" });
-  }
 
-  return NextResponse.json({
-    text: "Successfully embedded pdf",
-    fileName: file.name,
-  });
+    return NextResponse.json({
+        text: "Successfully embedded pdf",
+        fileName: file.name,
+    });
 }

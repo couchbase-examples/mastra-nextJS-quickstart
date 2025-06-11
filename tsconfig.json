@@ -13,6 +13,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "types": ["react", "react-dom"],
     "plugins": [
       {
         "name": "next"
@@ -20,7 +21,12 @@
     ],
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "noUncheckedIndexedAccess": true,
+    "declaration": true, // .d.ts file should also be generated
+    "declarationMap": true, // .d.ts.map file should also point to the source .ts file. This helps when clicking `Go to Definition` in VSCode
+    "sourceMap": true, // source map should also be generated. This helps debugger find the .ts file for the actual runnig .js file. And makes debugging MUCH easier.
+    "diagnostics": true, // This helps in logging more interpretable errors.
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
