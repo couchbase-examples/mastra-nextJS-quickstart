@@ -71,10 +71,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                     </div>
                 </div>
 
-                {/* Display the chunk indices as sources */}
+                {/* Display the chunk indices as sources
                 {(isLastMessage || previousMessages) && sources && (
                     <SourcesList sources={sources} onChunkClick={onChunkClick} />
-                )}
+                )} */}
             </div>
         </div>
     );
