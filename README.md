@@ -21,7 +21,7 @@ npm install
 
 2. **Environment Configuration**
 
-Create a `.env.local` file with these required variables:
+Create a `.env` file with these required variables:
 
 ```bash
 # Couchbase Vector Store Configuration
