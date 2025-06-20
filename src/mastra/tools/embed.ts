@@ -27,7 +27,7 @@ export const vectorQueryTool = createTool({
     inputSchema: z.object({
         query: z.string().describe("The search query to find relevant document chunks"),
         topK: z.number().optional().default(5).describe("Number of top results to return (default: 5)"),
-        minScore: z.number().optional().default(0.5).describe("Minimum similarity score threshold (default: 0.1)"),
+        minScore: z.number().optional().default(0.5).describe("Minimum similarity score threshold (default: 0.5)"),
     }),
     execute: async (executionContext) => {
         const { query, topK = 5, minScore = 0.5 } = executionContext.context;
