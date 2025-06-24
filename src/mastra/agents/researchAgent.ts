@@ -16,7 +16,7 @@ export const researchAgent = new Agent({
     Focus on the specific content available in the tool and acknowledge if you cannot find sufficient information to answer a question.
     Base your responses only on the content provided, not on general knowledge.
     Always cite the source documents when providing information.`,
-  model: openai("gpt-4.1-2025-04-14"),
+  model: openai("gpt-4.1"),
   tools: {
     vectorQueryTool,
   },
