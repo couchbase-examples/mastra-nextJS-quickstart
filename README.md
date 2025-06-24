@@ -76,12 +76,10 @@ Open [http://localhost:3000](http://localhost:3000) to access the application.
 ## Screenshots
 
 ### PDF Upload Interface
-*Add screenshot of the main page showing the drag-and-drop PDF upload interface*
 
 ![PDF Upload Page](./public/images/pdfUploader.jpg)
 
 ### Chat Interface  
-*Add screenshot of the chat page where users interact with their uploaded documents*
 
 ![Chat Interface](./public/images/chatInterface.jpeg)
 

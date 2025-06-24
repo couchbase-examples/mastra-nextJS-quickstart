@@ -43,15 +43,13 @@ export const InfoCard = () => (
                     answer based on the context from the Vector Store.
                 </span>
             </li>
-            {/* TODO: Add link to the repo
-        */}
             <li className="text-l mt-2">
                 {">"}
                 <span className="ml-2">
                     This code for this demo is open source - you can see the source code, learn more about using couchbase vector store and deploy
                     your own version{" "}
                     <a
-                        href="https://github.com/couchbase-examples/couchbase-mastra-rag"
+                        href="https://github.com/couchbase-examples/mastra-nextJS-quickstart"
                         target="_blank"
                         className="text-blue-500"
                     >
