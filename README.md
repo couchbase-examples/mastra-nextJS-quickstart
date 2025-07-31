@@ -14,7 +14,7 @@ A Next.js application that enables users to upload PDF documents and chat with t
 
 1. **Clone and install dependencies**
 ```bash
-git clone <repository-url>
+git clone https://github.com/couchbaselabs/couchbase-mastra-rag.git
 cd couchbase-mastra-rag
 npm install
 ```
@@ -63,12 +63,7 @@ OPENAI_API_KEY=your_openai_api_key
 ### Running the Application
 
 ```bash
-# Development mode
 npm run dev
-
-# Production build
-npm run build
-npm start
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to access the application.
