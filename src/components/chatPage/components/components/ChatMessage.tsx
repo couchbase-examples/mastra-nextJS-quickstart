@@ -1,6 +1,5 @@
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
-import SourcesList from "./components/SourcesList";
 
 interface ChatMessageProps {
     message: {
@@ -8,21 +7,15 @@ interface ChatMessageProps {
         content: string;
     };
     index: number;
-    sources?: { chunkIndex: number; chunkText: string; }[];
     isLastMessage: boolean;
-    previousMessages: boolean;
     isStreaming: boolean;
-    onChunkClick?: (chunkIndex: number, chunkText: string) => void;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
     message,
     index,
-    sources,
     isLastMessage,
-    previousMessages,
     isStreaming,
-    onChunkClick
 }) => {
     const getMessageBackgroundClass = () => {
         if (message.role === "assistant") {

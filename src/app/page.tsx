@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { InfoCard } from "@/components/InfoCard";
 import PDFUploader from "@/components/PDFUploader";
 
@@ -9,7 +10,9 @@ export default function Home() {
                 Chat With Your PDFs using power of couchbase vector search
             </h1>
             <div className="mx-auto min-w-[450px] flex justify-center">
-                <PDFUploader />
+                <Suspense fallback={<div>Loading uploader...</div>}>
+                    <PDFUploader />
+                </Suspense>
             </div>
         </div>
     );

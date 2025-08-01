@@ -1,21 +1,54 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
 import PDFViewer from "@/components/chatPage/PDFViewer";
 import ChatInterface from "@/components/chatPage/ChatInterface";
+
+interface ToolInvocationResult {
+  chunks?: Array<{
+    chunkIndex: number;
+    text: string;
+  }>;
+}
+
+interface MessagePart {
+  toolInvocation?: {
+    result?: ToolInvocationResult;
+  };
+}
+
+// Define the props interface for clarity
+interface PDFUrlProviderProps {
+    onPdfUrlChange: (url: string) => void;
+}
+
+// Component that only handles search params
+const PDFUrlProvider = ({ onPdfUrlChange }: PDFUrlProviderProps) => {
+    const searchParams = useSearchParams();
+    
+    useEffect(() => {
+        const fileName = searchParams.get("fileName");
+        const pdfUrl = fileName ? `/assets/${fileName}` : "";
+        
+        // Call the function passed from parent with the new URL
+        onPdfUrlChange(pdfUrl);
+    }, [searchParams, onPdfUrlChange]);
+
+    return null; // This component doesn't render anything
+};
 
 const ChatPage = () => {
     const [sourcesForMessages, setSourcesForMessages] = useState<Record<number, { chunkIndex: number; chunkText: string; }[]>>({});
     const [error, setError] = useState("");
     const [pdfUrl, setPdfUrl] = useState("");
     
-    const searchParams = useSearchParams();
-    
-    useEffect(() => {
-        setPdfUrl(("/assets/" + searchParams.get("fileName")) as string);
-    }, [searchParams]);
+    // This function will be called by PDFUrlProvider when URL changes
+    const handlePdfUrlChange = (newUrl: string) => {
+        console.log("PDF URL changed to:", newUrl); // Optional: for debugging
+        setPdfUrl(newUrl);
+    };
 
     const { messages, input, handleInputChange, handleSubmit, status } = useChat({
         api: "/api/chat",
@@ -25,27 +58,25 @@ const ChatPage = () => {
         onError: (e) => {
             setError(e.message);
         },
-        onFinish(message, options) {
+        onFinish(message) {
             try {
                 // Extract chunk data from message.parts[j].toolInvocation.result.chunks
-                let allChunks: { chunkIndex: number; chunkText: string; }[] = [];
+                const allChunks: { chunkIndex: number; chunkText: string; }[] = [];
                 
                 if (message.parts && Array.isArray(message.parts)) {
-                    message.parts.forEach((part: any) => {
-                        if (part.toolInvocation && part.toolInvocation.result && part.toolInvocation.result.chunks) {
+                    (message.parts as MessagePart[]).forEach((part) => {
+                        if (part.toolInvocation?.result?.chunks) {
                             const chunks = part.toolInvocation.result.chunks;
-                            if (Array.isArray(chunks)) {
-                                const chunkData = chunks
-                                    .filter((chunk: any) => 
-                                        typeof chunk.chunkIndex === 'number' && 
-                                        typeof chunk.text === 'string'
-                                    )
-                                    .map((chunk: any) => ({
-                                        chunkIndex: chunk.chunkIndex,
-                                        chunkText: chunk.text
-                                    }));
-                                allChunks.push(...chunkData);
-                            }
+                            const chunkData = chunks
+                                .filter((chunk) => 
+                                    typeof chunk.chunkIndex === 'number' && 
+                                    typeof chunk.text === 'string'
+                                )
+                                .map((chunk) => ({
+                                    chunkIndex: chunk.chunkIndex,
+                                    chunkText: chunk.text
+                                }));
+                            allChunks.push(...chunkData);
                         }
                     });
                 }
@@ -77,6 +108,11 @@ const ChatPage = () => {
 
     return (
         <div className="flex flex-col no-scrollbar -mt-2">
+            {/* Only wrap the search params logic in Suspense */}
+            <Suspense fallback={null}>
+                <PDFUrlProvider onPdfUrlChange={handlePdfUrlChange} />
+            </Suspense>
+            
             <div className="flex justify-between w-full lg:flex-row flex-col sm:space-y-20 lg:space-y-0 p-2">
                 {/* PDF Viewer */}
                 <PDFViewer pdfUrl={pdfUrl} />

@@ -15,8 +15,6 @@ interface MessageListProps {
 const MessageList: React.FC<MessageListProps> = ({
     messages,
     status,
-    sourcesForMessages,
-    onChunkClick
 }) => {
     const messageListRef = useRef<HTMLDivElement>(null);
 
@@ -33,9 +31,7 @@ const MessageList: React.FC<MessageListProps> = ({
                 ) : null}
 
                 {messages.map((message, index) => {
-                    const sources = sourcesForMessages[index] || undefined;
                     const isLastMessage = status === "ready" && index === messages.length - 1;
-                    const previousMessages = index !== messages.length - 1;
                     const isStreaming = (status === "submitted" || status === "streaming") && index === messages.length - 1;
 
                     return (
@@ -43,17 +39,14 @@ const MessageList: React.FC<MessageListProps> = ({
                             key={`chatMessage-${index}`}
                             message={message}
                             index={index}
-                            sources={sources}
                             isLastMessage={isLastMessage}
-                            previousMessages={previousMessages}
                             isStreaming={isStreaming}
-                            onChunkClick={onChunkClick}
                         />
                     );
                 })}
 
                 {/* Show "Thinking..." indicator when AI is processing but hasn't started streaming yet */}
-                {status === "submitted" ? (
+                {(status === "submitted" || status === "streaming" )? (
                     <div className="p-4 text-black bg-gray-100 animate-pulse">
                         <div className="flex gap-3">
                             <div className="flex-shrink-0">

@@ -38,7 +38,7 @@ const PDFUploader = () => {
         setIsLoading(false);
     }, []);
 
-    const uploadPdf = async (event: any) => {
+    const uploadPdf = async (event: React.FormEvent) => {
         event.preventDefault();
         if (isLoading) {
             return;
