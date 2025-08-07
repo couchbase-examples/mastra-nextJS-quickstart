@@ -19,8 +19,18 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl }) => {
 
     // Security fix: Disable eval support in PDF.js to prevent arbitrary code execution
     useEffect(() => {
-        if (typeof window !== 'undefined' && (window as any).pdfjsLib) {
-            (window as any).pdfjsLib.GlobalWorkerOptions.isEvalSupported = false;
+        if (typeof window !== 'undefined') {
+            const globalWindow = window as {
+                pdfjsLib?: {
+                    GlobalWorkerOptions: {
+                        isEvalSupported: boolean;
+                    };
+                };
+            };
+            
+            if (globalWindow.pdfjsLib) {
+                globalWindow.pdfjsLib.GlobalWorkerOptions.isEvalSupported = false;
+            }
         }
     }, []);
 

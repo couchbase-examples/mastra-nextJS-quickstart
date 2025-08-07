@@ -25,7 +25,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
     // Prevent empty chat submissions
     const handleEnter = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" && input.trim()) {
-            onSubmit(e as any);
+            onSubmit(e as React.FormEvent);
         } else if (e.key === "Enter") {
             e.preventDefault();
         }

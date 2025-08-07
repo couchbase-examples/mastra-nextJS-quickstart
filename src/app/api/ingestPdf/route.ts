@@ -50,10 +50,6 @@ const EMBEDDING_CONFIG = {
     dimension: parseInt(process.env.EMBEDDING_DIMENSION!),
     batchSize: parseInt(process.env.EMBEDDING_BATCH_SIZE!),
 };
-const CHUNKING_CONFIG = {
-    chunkSize: parseInt(process.env.CHUNK_SIZE!),
-    chunkOverlap: parseInt(process.env.CHUNK_OVERLAP!),
-};
 const INDEX_CONFIG = {
     indexName: process.env.VECTOR_INDEX_NAME as string,
     metric: process.env.VECTOR_INDEX_METRIC as 'cosine' | 'euclidean' | 'dotproduct',
