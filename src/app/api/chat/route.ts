@@ -26,7 +26,12 @@ function isMatraMessage(msg: unknown): msg is MatraMessage {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch (error) {
+    throw new Error("Invalid JSON body.");
+  }
   const messages = body.messages as unknown[];
 
   if (!Array.isArray(messages) || messages.length === 0) {
