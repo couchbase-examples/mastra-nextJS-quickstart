@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch (error) {
-    throw new Error("Invalid JSON body.");
+    throw new Error("Invalid JSON body: " + error);
   }
   const messages = body.messages as unknown[];
 
