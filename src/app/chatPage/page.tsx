@@ -29,11 +29,15 @@ const PDFUrlProvider = ({ onPdfUrlChange }: PDFUrlProviderProps) => {
     const searchParams = useSearchParams();
     
     useEffect(() => {
-        const fileName = searchParams.get("fileName");
-        const pdfUrl = fileName ? `/assets/${fileName}` : "";
-        
-        // Call the function passed from parent with the new URL
-        onPdfUrlChange(pdfUrl);
+        // Make sure searchParams is ready before using it
+        if (searchParams) {
+            const fileName = searchParams.get("fileName");
+            const pdfUrl = fileName ? `/assets/${fileName}` : "";
+            
+            // Call the function passed from parent with the new URL
+            onPdfUrlChange(pdfUrl);
+            console.log("PDFUrlProvider: params processed", { fileName, pdfUrl });
+        }
     }, [searchParams, onPdfUrlChange]);
 
     return null; // This component doesn't render anything
@@ -108,14 +112,23 @@ const ChatPage = () => {
 
     return (
         <div className="flex flex-col no-scrollbar -mt-2">
-            {/* Only wrap the search params logic in Suspense */}
-            <Suspense fallback={null}>
-                <PDFUrlProvider onPdfUrlChange={handlePdfUrlChange} />
+            {/* Use a key to force remounting when page loads */}
+            <Suspense fallback={<div>Loading URL parameters...</div>}>
+                <PDFUrlProvider 
+                    key="pdf-url-provider"
+                    onPdfUrlChange={handlePdfUrlChange} 
+                />
             </Suspense>
             
             <div className="flex justify-between w-full lg:flex-row flex-col sm:space-y-20 lg:space-y-0 p-2">
                 {/* PDF Viewer */}
-                <PDFViewer pdfUrl={pdfUrl} />
+                {pdfUrl ? (
+                    <PDFViewer pdfUrl={pdfUrl} />
+                ) : (
+                    <div className="flex-1 flex items-center justify-center">
+                        <p className="text-gray-500">No PDF selected</p>
+                    </div>
+                )}
                 
                 {/* Chat Interface */}
                 <ChatInterface
