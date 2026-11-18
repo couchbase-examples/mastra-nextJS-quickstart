@@ -1,67 +1,13 @@
 import { NextResponse } from "next/server";
 import { openai } from '@ai-sdk/openai';
 import { embedMany } from 'ai';
-import { CouchbaseVector } from '@mastra/couchbase';
 import { MDocument } from "@mastra/rag";
 import { writeFile } from "fs/promises";
 import path from "path";
 import { existsSync, mkdirSync } from "fs";
 import pdfParse from 'pdf-parse';
-
-
-// List of required environment variables
-const REQUIRED_ENV_VARS = {
-    EMBEDDING_MODEL: 'string',
-    EMBEDDING_DIMENSION: 'number',
-    EMBEDDING_BATCH_SIZE: 'number',
-    CHUNK_SIZE: 'number',
-    CHUNK_OVERLAP: 'number',
-    VECTOR_INDEX_NAME: 'string',
-    VECTOR_INDEX_METRIC: 'string',
-    COUCHBASE_CONNECTION_STRING: 'string',
-    COUCHBASE_USERNAME: 'string',
-    COUCHBASE_PASSWORD: 'string',
-    COUCHBASE_BUCKET_NAME: 'string',
-    COUCHBASE_SCOPE_NAME: 'string',
-    COUCHBASE_COLLECTION_NAME: 'string'
-} as const;
-// Function to validate environment variables
-function validateEnvVars() {
-    const missingVars: string[] = [];
-    for (const [varName, type] of Object.entries(REQUIRED_ENV_VARS)) {
-        const value = process.env[varName];
-        if (!value) {
-            missingVars.push(varName);
-            continue;
-        }
-        if (type === 'number' && isNaN(parseInt(value))) {
-            missingVars.push(`${varName} (must be a number)`);
-        }
-    }
-    if (missingVars.length > 0) {
-        throw new Error(`Missing or invalid environment variables: ${missingVars.join(', ')}`);
-    }
-}
-validateEnvVars();
-
-// Configuration objects using validated environment variables
-const EMBEDDING_CONFIG = {
-    model: process.env.EMBEDDING_MODEL as string,
-    dimension: parseInt(process.env.EMBEDDING_DIMENSION!),
-    batchSize: parseInt(process.env.EMBEDDING_BATCH_SIZE!),
-};
-const INDEX_CONFIG = {
-    indexName: process.env.VECTOR_INDEX_NAME as string,
-    metric: process.env.VECTOR_INDEX_METRIC as 'cosine' | 'euclidean' | 'dotproduct',
-};
-const COUCHBASE_CONFIG = {
-    connectionString: process.env.COUCHBASE_CONNECTION_STRING!,
-    username: process.env.COUCHBASE_USERNAME!,
-    password: process.env.COUCHBASE_PASSWORD!,
-    bucketName: process.env.COUCHBASE_BUCKET_NAME!,
-    scopeName: process.env.COUCHBASE_SCOPE_NAME!,
-    collectionName: process.env.COUCHBASE_COLLECTION_NAME!,
-};
+import { getConfig } from "@/mastra/config";
+import { getVectorStore } from "@/mastra/tools/store";
 
 
 /**
@@ -81,26 +27,6 @@ async function readDocument(fileBuffer: Buffer, fileName: string): Promise<strin
     }
 }
 /**
- * Connect to Couchbase using environment variables
- */
-function connectToCouchbase(): CouchbaseVector {
-    const connectionString = COUCHBASE_CONFIG.connectionString;
-    const username = COUCHBASE_CONFIG.username;
-    const password = COUCHBASE_CONFIG.password;
-    const bucketName = COUCHBASE_CONFIG.bucketName;
-    const scopeName = COUCHBASE_CONFIG.scopeName;
-    const collectionName = COUCHBASE_CONFIG.collectionName;
-
-    return new CouchbaseVector({
-        connectionString,
-        username,
-        password,
-        bucketName,
-        scopeName,
-        collectionName,
-    });
-}
-/**
  * Main function to process document and create embeddings
  * @param documentText - The text content of the document
  * @param fileName - The name of the file (used for logging)
@@ -108,19 +34,20 @@ function connectToCouchbase(): CouchbaseVector {
 async function createDocumentEmbeddings(documentText: string, fileName: string): Promise<void> {
     try {
         console.info('Starting document embedding process...');
+        const config = getConfig();
 
         // Step 1: Connect to Couchbase
         console.info('Connecting to Couchbase...');
-        const vectorStore = connectToCouchbase();
+        const vectorStore = getVectorStore();
         console.info('Successfully connected to Couchbase');
 
         // Step 2: Create search index
         console.info('Creating search index...');
         try {
             await vectorStore.createIndex({
-                indexName: INDEX_CONFIG.indexName,
-                dimension: EMBEDDING_CONFIG.dimension,
-                metric: INDEX_CONFIG.metric,
+                indexName: config.index.indexName,
+                dimension: config.embedding.dimension,
+                metric: config.index.metric,
             });
             console.info('Successfully created search index');
         } catch (error) {
@@ -145,7 +72,7 @@ async function createDocumentEmbeddings(documentText: string, fileName: string):
         // Step 4: Generate embeddings
         console.info('Generating embeddings...');
         const { embeddings } = await embedMany({ 
-            model: openai.embedding(EMBEDDING_CONFIG.model),
+            model: openai.embedding(config.embedding.model),
             values: chunks.map((chunk) => chunk.text),
         });
         console.info(`Generated ${embeddings.length} embeddings`);
@@ -164,7 +91,7 @@ async function createDocumentEmbeddings(documentText: string, fileName: string):
         // Step 6: Upsert vectors
         console.info('Upserting vectors to Couchbase...');
         await vectorStore.upsert({
-            indexName: INDEX_CONFIG.indexName,
+            indexName: config.index.indexName,
             vectors: embeddings,
             metadata: metadatas,
             ids,
