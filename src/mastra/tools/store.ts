@@ -1,28 +1,11 @@
 import { CouchbaseVector } from "@mastra/couchbase";
+import { getConfig } from "../config";
 
 /**
- * Create Couchbase connection using environment variables
+ * Create Couchbase connection from the validated app config
  */
 function createCouchbaseConnection(): CouchbaseVector {
-  const connectionString = process.env.COUCHBASE_CONNECTION_STRING;
-  const username = process.env.COUCHBASE_USERNAME;
-  const password = process.env.COUCHBASE_PASSWORD;
-  const bucketName = process.env.COUCHBASE_BUCKET_NAME;
-  const scopeName = process.env.COUCHBASE_SCOPE_NAME;
-  const collectionName = process.env.COUCHBASE_COLLECTION_NAME;
-
-  if (!connectionString || !username || !password || !bucketName || !scopeName || !collectionName) {
-    throw new Error('Missing required Couchbase environment variables. Please check your .env file.');
-  }
-
-  return new CouchbaseVector({
-    connectionString,
-    username,
-    password,
-    bucketName,
-    scopeName,
-    collectionName,
-  });
+  return new CouchbaseVector(getConfig().couchbase);
 }
 
 // Singleton pattern - create connection once and reuse
@@ -51,6 +34,3 @@ export function closeVectorStore(): void {
     vectorStoreInstance = null;
   }
 }
-
-// Export the instance directly for convenience
-export const vectorStore = getVectorStore(); 

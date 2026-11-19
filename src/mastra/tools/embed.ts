@@ -3,20 +3,7 @@ import { openai } from "@ai-sdk/openai";
 import { embed } from "ai";
 import { z } from "zod";
 import { getVectorStore } from "./store";
-
-function throwErrorUndefined(env_name: string): never {
-    throw new Error(`${env_name} environment variable is required`);
-}
-// Vector store configuration from environment variables
-const EMBEDDING_CONFIG = {
-    model: (process.env.EMBEDDING_MODEL || (() => { throwErrorUndefined('EMBEDDING_MODEL') })()) as string,
-    dimension: parseInt(process.env.EMBEDDING_DIMENSION || 'undefined') || (() => { throwErrorUndefined('EMBEDDING_DIMENSION') })(),
-    batchSize: parseInt(process.env.EMBEDDING_BATCH_SIZE || 'undefined') || (() => { throwErrorUndefined('EMBEDDING_BATCH_SIZE') })(),
-};
-const INDEX_CONFIG = {
-    indexName: (process.env.VECTOR_INDEX_NAME || (() => { throwErrorUndefined('VECTOR_INDEX_NAME') })()) as string,
-    metric: (process.env.VECTOR_INDEX_METRIC || (() => { throwErrorUndefined('VECTOR_INDEX_METRIC') })()) as 'cosine' | 'euclidean' | 'dotproduct',
-};
+import { getConfig } from "../config";
 
 /**
  * Vector query tool for semantic search over document embeddings
@@ -33,16 +20,18 @@ export const vectorQueryTool = createTool({
         const { query, topK = 5, minScore = 0.5 } = executionContext.context;
 
         try {
+            const config = getConfig();
+
             // Generate embedding for the query
             const { embedding: queryEmbedding } = await embed({
-                model: openai.embedding(EMBEDDING_CONFIG.model),
+                model: openai.embedding(config.embedding.model),
                 value: query,
             });
 
             // Perform vector search using shared connection
             const vectorStore = getVectorStore();
             const results = await vectorStore.query({
-                indexName: INDEX_CONFIG.indexName,
+                indexName: config.index.indexName,
                 queryVector: queryEmbedding,
                 topK,
             });
