@@ -32,7 +32,7 @@
     "@mastra/rag": "1.0.6",
     
     
-    "next": "15.3.3"
+    "next": "15.5.29"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -42,8 +42,11 @@
     "@types/react": "^19.1.7",
     "@types/react-dom": "^19.1.6",
     "eslint": "^9",
-    "eslint-config-next": "15.3.3",
+    "eslint-config-next": "15.5.29",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@mapbox/node-pre-gyp": "^2.0.3"
   }
 }

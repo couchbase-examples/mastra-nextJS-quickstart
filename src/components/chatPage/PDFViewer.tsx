@@ -4,7 +4,6 @@ import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation";
 import type { ToolbarSlot, TransformToolbarSlot } from "@react-pdf-viewer/toolbar";
 import { toolbarPlugin } from "@react-pdf-viewer/toolbar";
-import { useEffect } from "react";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 
@@ -16,23 +15,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl }) => {
     const toolbarPluginInstance = toolbarPlugin();
     const pageNavigationPluginInstance = pageNavigationPlugin();
     const { renderDefaultToolbar, Toolbar } = toolbarPluginInstance;
-
-    // Security fix: Disable eval support in PDF.js to prevent arbitrary code execution
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const globalWindow = window as {
-                pdfjsLib?: {
-                    GlobalWorkerOptions: {
-                        isEvalSupported: boolean;
-                    };
-                };
-            };
-            
-            if (globalWindow.pdfjsLib) {
-                globalWindow.pdfjsLib.GlobalWorkerOptions.isEvalSupported = false;
-            }
-        }
-    }, []);
 
     const transform: TransformToolbarSlot = (slot: ToolbarSlot) => ({
         ...slot,
@@ -54,6 +36,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl }) => {
                 </div>
                 <Viewer
                     fileUrl={pdfUrl}
+                    // pdfjs-dist 3.x is affected by GHSA-wgrm-67xf-hhpq (CVE-2024-4367): a crafted
+                    // font can run arbitrary JavaScript. @react-pdf-viewer pins pdfjs-dist to <4, so
+                    // apply the upstream mitigation and disable eval in PDF.js font rendering.
+                    transformGetDocumentParams={(params) => ({ ...params, isEvalSupported: false })}
                     plugins={[toolbarPluginInstance, pageNavigationPluginInstance]}
                 />
             </div>
