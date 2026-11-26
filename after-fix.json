@@ -1,0 +1,13 @@
+[
+ {
+  "maxImageSize": -1,
+  "disableFontFace": false,
+  "ignoreErrors": true,
+  "isEvalSupported": false,
+  "isOffscreenCanvasSupported": true,
+  "fontExtraProperties": false,
+  "useSystemFonts": true,
+  "cMapUrl": null,
+  "standardFontDataUrl": null
+ }
+]
